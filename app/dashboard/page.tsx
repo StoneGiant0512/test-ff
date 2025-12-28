@@ -10,6 +10,7 @@ import ProjectTable from '@/components/ProjectTable';
 import ProjectModal from '@/components/ProjectModal';
 import StatusFilter from '@/components/StatusFilter';
 import SearchBar from '@/components/SearchBar';
+import Header from '@/components/Header';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -108,11 +109,6 @@ export default function Dashboard() {
     }
   };
 
-  const handleLogout = () => {
-    authStorage.removeToken();
-    router.push('/login');
-  };
-
   // Show loading state while checking authentication
   if (isAuthLoading) {
     return (
@@ -129,33 +125,24 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <Header user={user} />
+
+      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
+        {/* Page Title and Actions */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Project Dashboard</h1>
-              <p className="mt-2 text-gray-600">Manage and track your projects</p>
-              {user && (
-                <p className="mt-1 text-sm text-gray-500">
-                  Welcome, <span className="font-medium">{user.name}</span>
-                </p>
-              )}
+              <h2 className="text-2xl font-bold text-gray-900">Projects</h2>
+              <p className="mt-1 text-gray-600">Manage and track your projects</p>
             </div>
-            <div className="flex gap-3 items-center">
-              <button
-                onClick={handleAddProject}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors shadow-sm hover:shadow-md"
-              >
-                + Add New Project
-              </button>
-              <button
-                onClick={handleLogout}
-                className="px-4 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium transition-colors"
-              >
-                Logout
-              </button>
-            </div>
+            <button
+              onClick={handleAddProject}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors shadow-sm hover:shadow-md"
+            >
+              + Add New Project
+            </button>
           </div>
 
           {/* Filters and Search */}
