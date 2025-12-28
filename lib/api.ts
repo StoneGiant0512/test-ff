@@ -1,5 +1,7 @@
 import axios from 'axios';
 import { Project, ProjectFormData, ApiResponse } from '@/types/project';
+import { AuthResponse, LoginFormData, RegisterFormData, User } from '@/types/auth';
+import { authStorage } from './auth';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
@@ -10,6 +12,55 @@ const api = axios.create({
   },
 });
 
+// Add request interceptor to include token in all requests
+api.interceptors.request.use(
+  (config) => {
+    const token = authStorage.getToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Add response interceptor to handle 401 errors (unauthorized)
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      // Token is invalid or expired, remove it
+      authStorage.removeToken();
+      // Redirect to login if we're in the browser
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
+// Authentication API
+export const authApi = {
+  register: async (data: RegisterFormData): Promise<AuthResponse> => {
+    const response = await api.post<AuthResponse>('/auth/register', data);
+    return response.data;
+  },
+
+  login: async (data: LoginFormData): Promise<AuthResponse> => {
+    const response = await api.post<AuthResponse>('/auth/login', data);
+    return response.data;
+  },
+
+  getCurrentUser: async (): Promise<User> => {
+    const response = await api.get<{ success: boolean; data: User }>('/auth/me');
+    return response.data.data;
+  },
+};
+
+// Project API
 export const projectApi = {
   // Get all projects with optional filters
   getAll: async (status?: string, search?: string): Promise<Project[]> => {
