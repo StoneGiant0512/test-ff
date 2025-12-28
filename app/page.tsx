@@ -1,22 +1,52 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { Project, ProjectFormData } from '@/types/project';
-import { projectApi } from '@/lib/api';
+import { projectApi, authApi } from '@/lib/api';
+import { authStorage } from '@/lib/auth';
+import { User } from '@/types/auth';
 import ProjectTable from '@/components/ProjectTable';
 import ProjectModal from '@/components/ProjectModal';
 import StatusFilter from '@/components/StatusFilter';
 import SearchBar from '@/components/SearchBar';
 
 export default function Dashboard() {
+  const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+
+  // Check authentication on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = authStorage.getToken();
+      if (!token) {
+        router.push('/login');
+        return;
+      }
+
+      try {
+        const userData = await authApi.getCurrentUser();
+        setUser(userData);
+      } catch (error) {
+        // Token is invalid, remove it and redirect to login
+        authStorage.removeToken();
+        router.push('/login');
+      } finally {
+        setIsAuthLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, [router]);
 
   // Fetch projects from API
   const fetchProjects = useCallback(async () => {
@@ -78,6 +108,25 @@ export default function Dashboard() {
     }
   };
 
+  const handleLogout = () => {
+    authStorage.removeToken();
+    router.push('/login');
+  };
+
+  // Show loading state while checking authentication
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  // Don't render dashboard if not authenticated (will redirect)
+  if (!user) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -87,13 +136,26 @@ export default function Dashboard() {
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Project Dashboard</h1>
               <p className="mt-2 text-gray-600">Manage and track your projects</p>
+              {user && (
+                <p className="mt-1 text-sm text-gray-500">
+                  Welcome, <span className="font-medium">{user.name}</span>
+                </p>
+              )}
             </div>
-            <button
-              onClick={handleAddProject}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors shadow-sm hover:shadow-md"
-            >
-              + Add New Project
-            </button>
+            <div className="flex gap-3 items-center">
+              <button
+                onClick={handleAddProject}
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors shadow-sm hover:shadow-md"
+              >
+                + Add New Project
+              </button>
+              <button
+                onClick={handleLogout}
+                className="px-4 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium transition-colors"
+              >
+                Logout
+              </button>
+            </div>
           </div>
 
           {/* Filters and Search */}
