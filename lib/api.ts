@@ -4,7 +4,7 @@ import { AuthResponse, LoginFormData, RegisterFormData, User } from '@/types/aut
 import { authStorage } from './auth';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
-
+console.log(API_BASE_URL, 'API_BASE_URL');
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -49,8 +49,14 @@ export const authApi = {
     return response.data;
   },
 
+  test: async (): Promise<{}> => {
+    const response = await api.get<{}>(`http://test-backend-6r69.onrender.com `);
+    console.log("response", response.data)
+    return response.data;
+  },
+
   login: async (data: LoginFormData): Promise<AuthResponse> => {
-    const response = await api.post<AuthResponse>('/auth/login', data);
+    const response = await api.post<AuthResponse>(`${API_BASE_URL}/auth/login`, data);
     return response.data;
   },
 

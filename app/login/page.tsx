@@ -17,10 +17,11 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
+    
     e.preventDefault();
     setErrors({});
     setIsLoading(true);
-
+    
     try {
       const response = await authApi.login(formData);
       if (response.success && response.data.token) {
