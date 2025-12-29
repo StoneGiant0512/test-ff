@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Project, ProjectFormData } from '@/types/project';
-import { Input, Button } from '@/components/common';
+import { Input, Button } from '@/components/shared';
 
 interface ProjectModalProps {
   isOpen: boolean;

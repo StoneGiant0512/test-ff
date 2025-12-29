@@ -3,7 +3,7 @@
 import { User } from '@/types/auth';
 import { authStorage } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/common';
+import { Button } from '@/components/shared';
 
 interface HeaderProps {
   user: User;

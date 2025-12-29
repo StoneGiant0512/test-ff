@@ -1,7 +1,7 @@
 'use client';
 
 import { Project } from '@/types/project';
-import { Badge, Button } from '@/components/common';
+import { Badge, Button } from '@/components/shared';
 import ProjectCard from './ProjectCard';
 
 interface ProjectTableProps {

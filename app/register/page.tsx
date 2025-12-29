@@ -6,8 +6,8 @@ import Link from 'next/link';
 import { authApi } from '@/lib/api';
 import { authStorage } from '@/lib/auth';
 import { RegisterFormData } from '@/types/auth';
-import Input from '@/components/common/Input';
-import Button from '@/components/common/Button';
+import Input from '@/components/shared/Input';
+import Button from '@/components/shared/Button';
 
 export default function RegisterPage() {
   const router = useRouter();
