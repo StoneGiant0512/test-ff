@@ -21,6 +21,7 @@ export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [sortField, setSortField] = useState<keyof Project | null>(null);
@@ -62,12 +63,23 @@ export default function Dashboard() {
     }
   }, []);
 
+  // Debounce search term - update debouncedSearchTerm after user stops typing for 500ms
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [searchTerm]);
+
   // Fetch projects from API with filters
   const fetchProjects = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
-      const data = await projectApi.getAll(selectedStatus !== 'all' ? selectedStatus : undefined, searchTerm || undefined);
+      const data = await projectApi.getAll(selectedStatus !== 'all' ? selectedStatus : undefined, debouncedSearchTerm || undefined);
       setProjects(data);
       setFilteredProjects(data);
     } catch (err) {
@@ -76,7 +88,7 @@ export default function Dashboard() {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedStatus, searchTerm]);
+  }, [selectedStatus, debouncedSearchTerm]);
 
   // Sort projects
   const sortProjects = useCallback((projects: Project[]): Project[] => {
